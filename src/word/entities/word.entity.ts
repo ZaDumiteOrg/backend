@@ -11,11 +11,11 @@ export class Word {
     @Column()
     word: string;
 
-    @Column()
-    description: Text;
+    @Column({type: 'text'})
+    description: string;
 
-    @Column()
-    example: Text;
+    @Column({type: 'text'})
+    example: string;
 }
 
 

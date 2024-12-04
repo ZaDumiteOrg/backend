@@ -12,8 +12,9 @@ export class WordService {
     private readonly wordRepository: Repository<Word>,
   ) {}
 
-  async create(createWordDto: Partial<Word>): Promise<Word> {
-    return this.wordRepository.create(createWordDto);
+  async create(createWordDto: CreateWordDto): Promise<Word> {
+    const word = this.wordRepository.create(createWordDto);
+    return this.wordRepository.save(word);
   }
 
   async findAll(): Promise<Word[]> {
@@ -21,7 +22,11 @@ export class WordService {
   }
 
   async findOne(id: number): Promise<Word> {
-    return this.wordRepository.findOneBy({id});
+    const word = await this.wordRepository.findOneBy({id});
+    if(!word) {
+      throw new NotFoundException(`Word with ID ${id} not found`);
+    }
+    return word;
   }
 
   async update(id: number, updateWordDto: UpdateWordDto): Promise<Word> {

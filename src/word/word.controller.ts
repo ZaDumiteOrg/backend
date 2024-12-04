@@ -9,7 +9,7 @@ export class WordController {
   constructor(private readonly wordService: WordService) {}
 
   @Post()
-  async create(@Body() createWordDto: Word) : Promise<Word> {
+  async create(@Body() createWordDto: CreateWordDto): Promise<Word> {
     return this.wordService.create(createWordDto);
   }
 
@@ -24,7 +24,10 @@ export class WordController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateWordDto: Partial<Word>): Promise<Word> {
+  async update(
+    @Param('id') id: string,
+    @Body() updateWordDto: UpdateWordDto,
+  ): Promise<Word> {
     return this.wordService.update(+id, updateWordDto);
   }
 
