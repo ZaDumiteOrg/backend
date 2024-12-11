@@ -27,6 +27,13 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
+  @Get(':id/is-admin')
+  async isAdmin(
+    @Param('id')id: string,
+  ): Promise<boolean> {
+    return this.userService.isAdmin(+id)
+  }
+
   @Patch(':id') 
   async update(
     @Param('id') id: number, 
