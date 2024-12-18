@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module'
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { jwtConstants } from './auth/constants';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -17,6 +19,11 @@ import { AuthModule } from './auth/auth.module';
       database: 'zadumite',
       entities: [User],
       synchronize: true,
+    }),
+    JwtModule.register({
+      global: true, 
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '10h' },
     }),
     UserModule,
     AuthModule
