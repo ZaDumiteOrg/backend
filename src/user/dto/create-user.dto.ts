@@ -1,6 +1,5 @@
 import{ IsString, IsEmail, IsOptional, MinLength, IsEnum } from 'class-validator';
-import { UserRole } from '../entities/user.entity';
-
+import{ Role } from '../../roles/enums/role.enum'
 export class CreateUserDto {
     @IsString()
     firstName: string;
@@ -16,7 +15,7 @@ export class CreateUserDto {
     password: string;
 
     @IsOptional() 
-    @IsEnum(UserRole, { message: 'role must be either "admin" or "user"' })
-    role?: UserRole; 
+    @IsEnum(Role, { message: 'role must be either "admin" or "user"' })
+    role?: Role; 
 }
 

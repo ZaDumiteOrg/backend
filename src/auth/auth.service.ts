@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,5 +29,18 @@ export class AuthService {
         access_token: await this.jwtService.signAsync(payload, { secret: jwtConstants.secret || 'holyguacamole' }),
       };
     }
+  }
+
+  async signUp(payload: CreateUserDto) {
+    //const user = await this.usersService.create(payload);
+    const hashPass = await bcrypt.hash(payload.password, 10)
+
+    let data = {
+      ...payload,
+      password: hashPass
+    }
+
+    const user = await this.usersService.create(data);
+    return user;
   }
 }
