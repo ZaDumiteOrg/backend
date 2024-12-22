@@ -1,4 +1,4 @@
-
+import * as bcrypt from 'bcrypt';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
@@ -16,12 +16,17 @@ export class AuthService {
     pass: string,
   ): Promise<{ access_token: string }> {
     const user = await this.usersService.findOneByEmail(email);
-    if (user?.password !== pass) {
-      throw new UnauthorizedException();
+    if(user?.password !== pass) {
+      const isMatch = await bcrypt.compare(pass, user?.password);
+
+      if (!isMatch) {
+        throw new UnauthorizedException("Incorrect password");
+      }
+
+      const payload = { sub: user.id, username: user.email };
+      return {
+        access_token: await this.jwtService.signAsync(payload, { secret: jwtConstants.secret || 'holyguacamole' }),
+      };
     }
-    const payload = { sub: user.id, username: user.email };
-    return {
-    access_token: await this.jwtService.signAsync(payload, { secret: jwtConstants.secret || 'holyguacamole' }),
-    };
   }
 }
