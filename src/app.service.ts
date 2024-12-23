@@ -9,4 +9,12 @@ export class AppService {
     }
     return secretKey;
   }
+
+  getRefreshSecretKey(): string {
+    const refreshKey = process.env.REFRESH_SECRET_KEY;
+    if(!refreshKey) {
+      throw new Error('REFRESH_SECRET_KEY is not defined in the environment variables');
+    }
+    return refreshKey;
+  }
 }
