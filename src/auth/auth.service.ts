@@ -24,15 +24,14 @@ export class AuthService {
         throw new UnauthorizedException("Incorrect password");
       }
 
-      const payload = { sub: user.id, username: user.email };
+      const payload = { sub: user.id, username: user.email, roles: user.role };
       return {
-        access_token: await this.jwtService.signAsync(payload, { secret: jwtConstants.secret || 'holyguacamole' }),
+        access_token: await this.jwtService.signAsync(payload, { secret: jwtConstants.secret}),
       };
     }
   }
 
   async signUp(payload: CreateUserDto) {
-    //const user = await this.usersService.create(payload);
     const hashPass = await bcrypt.hash(payload.password, 10)
 
     let data = {

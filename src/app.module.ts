@@ -9,6 +9,10 @@ import { jwtConstants } from './auth/constants';
 import { JwtModule } from '@nestjs/jwt';
 import { RolesGuard } from './roles/roles.guard';
 import { APP_GUARD } from '@nestjs/core';
+import { WordModule } from './word/word.module';
+import { Word } from './word/entities/word.entity';
+import { AuthGuard } from './auth/auth.guard';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   imports: [
@@ -19,7 +23,7 @@ import { APP_GUARD } from '@nestjs/core';
       username: 'root',
       password: 'root',
       database: 'zadumite',
-      entities: [User],
+      entities: [User, Word],
       synchronize: true,
     }),
     JwtModule.register({
@@ -28,15 +32,15 @@ import { APP_GUARD } from '@nestjs/core';
       signOptions: { expiresIn: '10h' },
     }),
     UserModule,
+    WordModule,
     AuthModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, AuthController],
   providers: [AppService,  
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
-    },],
-  
-
+      useClass: AuthGuard,
+    },
+  ],
 })
 export class AppModule {}
