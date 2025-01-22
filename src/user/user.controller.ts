@@ -3,6 +3,8 @@ import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Word } from '../word/entities/word.entity';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('user')
 export class UserController {
@@ -13,6 +15,12 @@ export class UserController {
     @Body() createUserDto: CreateUserDto
   ): Promise<User> {
     return this.userService.create(createUserDto);
+  }
+
+  @Public()
+  @Get('word-of-the-week') 
+  async getWordOfTheWeek(): Promise<Word> {
+    return this.userService.assignWordOfTheWeekToUsers();
   }
 
   @Get()
@@ -47,5 +55,20 @@ export class UserController {
     @Param('id') id: number,
   ): Promise<void> {
     return this.userService.delete(id); 
+  }
+
+  @Public()
+  @Post('assign-weekly-word')
+  async assignWordOfTheWeek(): Promise<{ message: string }> {
+    await this.userService.assignWordOfTheWeekToUsers();
+    return { message: 'Word of the week assigned to all users' };
+  }
+
+  @Public()
+  @Get(':id/words')
+  async getUserWords(
+    @Param('id') id: string,
+  ): Promise<Word[]> {
+    return this.userService.getUserWords(+id);
   }
 }
