@@ -13,6 +13,8 @@ import { WordModule } from './word/word.module';
 import { Word } from './word/entities/word.entity';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthController } from './auth/auth.controller';
+import { ScheduleModule } from '@nestjs/schedule';
+import { WeeklyWordService } from './schedulers/weekly-word/weekly-word.service';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { AuthController } from './auth/auth.controller';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '10h' },
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     WordModule,
     AuthModule
@@ -41,6 +44,7 @@ import { AuthController } from './auth/auth.controller';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    WeeklyWordService
   ],
 })
 export class AppModule {}
