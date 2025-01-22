@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Word {
@@ -8,7 +8,7 @@ export class Word {
     @Column({nullable:true})
     insteadOf?: string;
 
-    @Column()
+    @Column({ unique: true })
     word: string;
 
     @Column({type: 'text'})
@@ -16,6 +16,10 @@ export class Word {
 
     @Column({type: 'text'})
     example: string;
+
+    @Column({type: 'int', nullable: true})
+    week?: number;
+
 }
 
 
