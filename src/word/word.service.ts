@@ -13,9 +13,41 @@ export class WordService {
   ) {}
 
   async create(createWordDto: CreateWordDto): Promise<Word> {
-    const word = this.wordRepository.create(createWordDto);
-    return this.wordRepository.save(word);
+    const latestWords = await this.wordRepository.find({
+      order: { week: 'DESC' },
+      take: 1, 
+    });
+  
+    console.log('Latest word:', latestWords);
+    const nextWeek = latestWords.length === 0 ? 1 : latestWords[0].week + 1;
+  
+    console.log('Next week:' , nextWeek);
+    const newWord = this.wordRepository.create({
+      ...createWordDto,
+      week: nextWeek,
+    });
+  
+    return this.wordRepository.save(newWord);
   }
+  
+
+  async getWordOfTheWeek(): Promise<Word | null> {
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const diff = now.getTime() - startOfYear.getTime();
+    const currentWeek = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+    const totalWords = await this.wordRepository.count();
+    if (totalWords === 0) {
+      return null; 
+    }
+
+    const wordWeek = ((currentWeek - 1) % totalWords) + 1;
+
+    const wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
+    return wordOfTheWeek;
+  }
+  
 
   async findAll(): Promise<Word[]> {
     return this.wordRepository.find();
