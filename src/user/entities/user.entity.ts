@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
 import { Role } from '../../roles/enums/role.enum'
+import { Word } from '../../word/entities/word.entity';
 
 @Entity()
 export class User {
@@ -24,5 +25,9 @@ export class User {
         default: Role.User, 
       })
       role: Role;
+
+    @ManyToMany(() => Word)
+    @JoinTable() 
+    words: Word[]; 
 }
 
