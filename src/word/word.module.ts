@@ -14,6 +14,6 @@ import { RolesGuard } from 'src/roles/roles.guard';
     provide: APP_GUARD,
     useClass: RolesGuard
   }],
-  exports: [WordService],
+  exports: [TypeOrmModule],
 })
 export class WordModule {}
