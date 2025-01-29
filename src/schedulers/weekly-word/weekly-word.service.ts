@@ -6,7 +6,7 @@ import { UserService } from '../../user/user.service';
 export class WeeklyWordService {
   constructor(private readonly userService: UserService) {}
 
-  @Cron('0 * * * *')
+  @Cron('0 9 * * 1')
   async assignWeeklyWord() {
     console.log('Scheduler triggered: Assigning word of the week...');
 
