@@ -35,7 +35,7 @@ import { AuthController } from './auth/auth.controller';
     WordModule,
     AuthModule
   ],
-  controllers: [AppController, AuthController],
+  controllers: [AppController],
   providers: [AppService,  
     {
       provide: APP_GUARD,
