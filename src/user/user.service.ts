@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +23,7 @@ export class UserService {
     const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
     const user = this.userRepository.create({
       ...createUserDto,
+      password: hashedPassword,
       role: createUserDto.role || Role.User, 
     });
 
@@ -62,13 +63,33 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+  
     if (updateUserDto.password) {
-      const saltRounds = 10;
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, saltRounds);
+      throw new BadRequestException('Password cannot be updated via this route.');
     }
+  
     Object.assign(user, updateUserDto); 
-    return this.userRepository.save(user); 
+    return this.userRepository.save(user);
   }
+  
+
+  async changePassword(id: number, oldPassword: string, newPassword: string): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      throw new BadRequestException('Old password is incorrect.');
+    }
+  
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(newPassword, saltRounds);
+  
+    return this.userRepository.save(user);
+  }
+  
 
   async delete(id: number): Promise<void> {
     const result = await this.userRepository.delete(id);

@@ -4,6 +4,7 @@ import { UserService } from 'src/user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { SignInDto } from 'src/user/dto/sign-in.dto';
 
 @Injectable()
 export class AuthService {
@@ -13,34 +14,36 @@ export class AuthService {
   ) {}
 
   async signIn(
-    email: string,
-    pass: string,
+    signInDto: SignInDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const user = await this.usersService.findOneByEmail(email);
-    if(user?.password !== pass) {
-      const isMatch = await bcrypt.compare(pass, user?.password);
+    const user = await this.usersService.findOneByEmail(signInDto.email);
 
-      if (!isMatch) {
-        throw new UnauthorizedException("Incorrect password");
-      }
-
-      const payload = { sub: user.id, username: user.email, roles: user.role };
-
-      const access_token = await this.jwtService.signAsync(payload, {
-        secret: jwtConstants.secret,
-        expiresIn: '15m',
-      });
-
-      const refresh_token = await this.jwtService.signAsync(payload, {
-        secret: jwtConstants.refreshSecret, 
-        expiresIn: '7d',
-      });
-    
-      return {
-        access_token,
-        refresh_token,
-      };
+    if (!user) {
+      throw new UnauthorizedException("User not found");
     }
+
+    const isMatch = await bcrypt.compare(signInDto.password, user?.password);
+
+    if (!isMatch) {
+      throw new UnauthorizedException("Incorrect password");
+    }
+
+    const payload = { sub: user.id, username: user.email, roles: user.role };
+
+    const access_token = await this.jwtService.signAsync(payload, {
+      secret: jwtConstants.secret,
+      expiresIn: '15m',
+    });
+
+    const refresh_token = await this.jwtService.signAsync(payload, {
+      secret: jwtConstants.refreshSecret, 
+      expiresIn: '7d',
+    });
+  
+    return {
+      access_token,
+      refresh_token,
+    };
   }
 
   async verifyRefreshToken(token: string): Promise<any> {
