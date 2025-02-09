@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { UserService } from '../../user/user.service';
 
@@ -8,14 +8,10 @@ export class WeeklyWordService {
 
   @Cron('0 9 * * 1')
   async assignWeeklyWord() {
-    console.log('Scheduler triggered: Assigning word of the week...');
-
     try {
-      const assignedWord = await this.userService.assignWordOfTheWeekToUsers();
-      console.log('Assigned Word of the Week:', assignedWord);
-      console.log('Word of the week assigned successfully.');
+      await this.userService.assignWordOfTheWeekToUsers();
     } catch (error) {
-      console.error('Error assigning word of the week:', error.message);
+      throw new InternalServerErrorException(`Error assigning word of the week: ${error.message}`);
     }
   }
 }

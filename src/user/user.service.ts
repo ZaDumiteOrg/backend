@@ -112,7 +112,6 @@ export class UserService {
     const wordWeek = ((currentWeek - 1) % totalWords) + 1;
   
     const wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
-    console.log("Word from user service:", wordOfTheWeek)
   
     if (!wordOfTheWeek) {
       throw new Error(`No word found for week ${wordWeek}`);
