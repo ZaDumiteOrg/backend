@@ -18,10 +18,8 @@ export class WordService {
       take: 1, 
     });
   
-    console.log('Latest word:', latestWords);
     const nextWeek = latestWords.length === 0 ? 1 : latestWords[0].week + 1;
   
-    console.log('Next week:' , nextWeek);
     const newWord = this.wordRepository.create({
       ...createWordDto,
       week: nextWeek,

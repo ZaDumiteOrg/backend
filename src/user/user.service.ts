@@ -103,32 +103,61 @@ export class UserService {
     const startOfYear = new Date(now.getFullYear(), 0, 1);
     const currentWeek = Math.floor((now.getTime() - startOfYear.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
   
-    const totalWords = await this.wordRepository.count();
-  
-    if (totalWords === 0) {
-      throw new Error('No words available in the database.');
-    }
-  
-    const wordWeek = ((currentWeek - 1) % totalWords) + 1;
-  
-    const wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
-  
-    if (!wordOfTheWeek) {
-      throw new Error(`No word found for week ${wordWeek}`);
-    }
-  
-    const users = await this.userRepository.find({
-      relations: ['words'], 
+    const words = await this.wordRepository.find({
+        order: { id: 'ASC' }, 
     });
   
-    for (const user of users) {
-      if (!user.words.some((word) => word.id === wordOfTheWeek.id)) {
-        user.words.push(wordOfTheWeek);
-        await this.userRepository.save(user);
-      }
+    if (words.length === 0) {
+      throw new Error('No words available.');
     }
+  
+    const index = (currentWeek - 1) % words.length;
+    const wordOfTheWeek = words[index];
+
+    const users = await this.userRepository.find({ relations: ['words'] });
+  
+    for (const user of users) {
+        if (!user.words.some((word) => word.id === wordOfTheWeek.id)) {
+            user.words.push(wordOfTheWeek);
+            await this.userRepository.save(user);
+        }
+    }
+  
     return wordOfTheWeek;
-  }
+}
+
+
+  // async assignWordOfTheWeekToUsers(): Promise<Word> {
+  //   const now = new Date();
+  //   const startOfYear = new Date(now.getFullYear(), 0, 1);
+  //   const currentWeek = Math.floor((now.getTime() - startOfYear.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+  
+  //   const totalWords = await this.wordRepository.count();
+  
+  //   if (totalWords === 0) {
+  //     throw new Error('No words available in the database.');
+  //   }
+  
+  //   const wordWeek = ((currentWeek - 1) % totalWords) + 1;
+  
+  //   const wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
+  
+  //   if (!wordOfTheWeek) {
+  //     throw new Error(`No word found for week ${wordWeek}`);
+  //   }
+  
+  //   const users = await this.userRepository.find({
+  //     relations: ['words'], 
+  //   });
+  
+  //   for (const user of users) {
+  //     if (!user.words.some((word) => word.id === wordOfTheWeek.id)) {
+  //       user.words.push(wordOfTheWeek);
+  //       await this.userRepository.save(user);
+  //     }
+  //   }
+  //   return wordOfTheWeek;
+  // }
   
 
   async getUserWords(userId: number): Promise<Word[]> {
