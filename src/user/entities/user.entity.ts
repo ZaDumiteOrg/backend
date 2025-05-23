@@ -1,6 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { Role } from '../../roles/enums/role.enum'
 import { Word } from '../../word/entities/word.entity';
+import { UserQuestion } from '../../user-question/entities/user-question.entity';
+
 
 @Entity()
 export class User {
@@ -13,6 +15,7 @@ export class User {
     @Column()
     lastName: string;
 
+    @Column({ unique: true })
     @Column()
     email: string;
 
@@ -26,8 +29,16 @@ export class User {
       })
       role: Role;
 
+    @Column({ default: 0 })
+    totalScore: number;
+
     @ManyToMany(() => Word)
     @JoinTable() 
-    words: Word[]; 
+    words: Word[];
+    
+    @OneToMany(() => UserQuestion, (userQuestion) => userQuestion.user)
+    userQuestions: UserQuestion[];
+
+   
 }
 

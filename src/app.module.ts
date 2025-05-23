@@ -14,6 +14,11 @@ import { AuthGuard } from './auth/auth.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { WeeklyWordService } from './schedulers/weekly-word/weekly-word.service';
+import { Question } from './question/entities/question.entity';
+import { UserQuestion } from './user-question/entities/user-question.entity';
+import { UserQuestionModule } from './user-question/user-question.module';
+import { QuestionModule } from './question/question.module';
+import { DailyQuestionHistory } from './daily-question-history/entities/daily-question-history.entity';
 
 @Module({
   imports: [
@@ -24,13 +29,13 @@ import { WeeklyWordService } from './schedulers/weekly-word/weekly-word.service'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
+        type: configService.get<string>('DB_TYPE') as 'mysql',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        entities: [User, Word],
+        entities: [User, Word, Question, UserQuestion, DailyQuestionHistory],
         synchronize: configService.get<boolean>('DB_SYNCHRONIZE') ?? false,
       }),
     }),
@@ -43,6 +48,8 @@ import { WeeklyWordService } from './schedulers/weekly-word/weekly-word.service'
     UserModule,
     WordModule,
     AuthModule,
+    QuestionModule,
+    UserQuestionModule,
   ],
   controllers: [AppController],
   providers: [
@@ -51,7 +58,7 @@ import { WeeklyWordService } from './schedulers/weekly-word/weekly-word.service'
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-    WeeklyWordService
+    WeeklyWordService,
   ],
 })
 export class AppModule {}

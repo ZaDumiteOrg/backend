@@ -17,12 +17,16 @@ export class AuthService {
     signInDto: SignInDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.usersService.findOneByEmail(signInDto.email);
+    console.log("Found user:", user);
 
     if (!user) {
       throw new UnauthorizedException("User not found");
     }
 
     const isMatch = await bcrypt.compare(signInDto.password, user?.password);
+
+    console.log("Password match:", isMatch);
+
 
     if (!isMatch) {
       throw new UnauthorizedException("Incorrect password");
@@ -93,7 +97,6 @@ export class AuthService {
       secret: jwtConstants.refreshSecret,
       expiresIn: '7d',
     });
-
 
     return {
       user,
