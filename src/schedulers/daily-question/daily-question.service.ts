@@ -20,13 +20,13 @@ export class DailyQuestionService {
     this.logger.log('DailyQuestionService initialized');
     const question = await this.getDailyQuestion();
     if (question) {
-      this.logger.log(`📌 Today's daily question: ${question.questionText}`);
+      this.logger.log(`Today's daily question: ${question.questionText}`);
     } else {
-      this.logger.warn('⚠️ No daily question has been assigned yet for today.');
+      this.logger.warn('No daily question has been assigned yet for today.');
     }
   }
 
-  @Cron('0 10 * * *') 
+  @Cron('*/5 * * * *') 
   async assignDailyQuestion(): Promise<void> {
     const today = new Date();
     const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay(); 
@@ -48,7 +48,7 @@ export class DailyQuestionService {
       this.logger.warn('No new questions available. Reusing an old one.');
     } else {
       await this.historyRepository.save({ question, dayOfWeek });
-      this.logger.log(`Daily question assigned: ${question.id}`);
+      this.logger.log(`Daily question assigned: ${JSON.stringify(question)}`);
     }
   }
 
