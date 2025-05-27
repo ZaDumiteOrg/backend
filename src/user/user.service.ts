@@ -15,7 +15,7 @@ export class UserService {
     private readonly userRepository: Repository<User>,
 
     @InjectRepository(Word) 
-    private readonly wordRepository: Repository<Word>,
+    private readonly wordRepository: Repository<Word>
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -101,64 +101,43 @@ export class UserService {
   async assignWordOfTheWeekToUsers(): Promise<Word> {
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 1);
-    const currentWeek = Math.floor((now.getTime() - startOfYear.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  
-    const words = await this.wordRepository.find({
-        order: { id: 'ASC' }, 
-    });
-  
-    if (words.length === 0) {
-      throw new Error('No words available.');
+    const diff = now.getTime() - startOfYear.getTime();
+    const currentWeek = Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+    const totalWords = await this.wordRepository.count();
+    if (totalWords === 0) {
+      return await this.getFallbackWord(); 
     }
-  
-    const index = (currentWeek - 1) % words.length;
-    const wordOfTheWeek = words[index];
+
+    const wordWeek = ((currentWeek - 1) % totalWords) + 1;
+    let wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
+
+    if (!wordOfTheWeek) {
+      wordOfTheWeek = await this.getFallbackWord();
+    }
 
     const users = await this.userRepository.find({ relations: ['words'] });
-  
+
     for (const user of users) {
-        if (!user.words.some((word) => word.id === wordOfTheWeek.id)) {
-            user.words.push(wordOfTheWeek);
-            await this.userRepository.save(user);
-        }
+      const alreadyAssigned = user.words.some(word => word.id === wordOfTheWeek.id);
+
+      if (!alreadyAssigned) {
+        user.words.push(wordOfTheWeek);
+        await this.userRepository.save(user); 
+      }
     }
-  
+
     return wordOfTheWeek;
-}
+  }
 
+  private async getFallbackWord(): Promise<Word> {
+    const fallback = await this.wordRepository.findOneBy({ id: 14 });
+    if (!fallback) {
+      throw new Error('Fallback word with ID 14 not found.');
+    }
+    return fallback;
+  }
 
-  // async assignWordOfTheWeekToUsers(): Promise<Word> {
-  //   const now = new Date();
-  //   const startOfYear = new Date(now.getFullYear(), 0, 1);
-  //   const currentWeek = Math.floor((now.getTime() - startOfYear.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  
-  //   const totalWords = await this.wordRepository.count();
-  
-  //   if (totalWords === 0) {
-  //     throw new Error('No words available in the database.');
-  //   }
-  
-  //   const wordWeek = ((currentWeek - 1) % totalWords) + 1;
-  
-  //   const wordOfTheWeek = await this.wordRepository.findOneBy({ week: wordWeek });
-  
-  //   if (!wordOfTheWeek) {
-  //     throw new Error(`No word found for week ${wordWeek}`);
-  //   }
-  
-  //   const users = await this.userRepository.find({
-  //     relations: ['words'], 
-  //   });
-  
-  //   for (const user of users) {
-  //     if (!user.words.some((word) => word.id === wordOfTheWeek.id)) {
-  //       user.words.push(wordOfTheWeek);
-  //       await this.userRepository.save(user);
-  //     }
-  //   }
-  //   return wordOfTheWeek;
-  // }
-  
 
   async getUserWords(userId: number): Promise<Word[]> {
     const user = await this.userRepository.findOne({
