@@ -83,14 +83,7 @@ export class AuthService {
   }
 
   async signUp(payload: CreateUserDto): Promise<any> {
-    const hashPass = await bcrypt.hash(payload.password, 10)
-
-    let data = {
-      ...payload,
-      password: hashPass
-    }
-
-    const user = await this.usersService.create(data);
+    const user = await this.usersService.create(payload);
     const tokenPayload = { sub: user.id, username: user.email, roles: user.role };
     const accessToken = await this.generateAccessToken(tokenPayload);
     const refreshToken = await this.jwtService.signAsync(tokenPayload, {
